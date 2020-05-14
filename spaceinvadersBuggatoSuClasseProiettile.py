@@ -2,7 +2,7 @@
 
 # Space Invaders
 # Created by Lee Robinson
-# rifattorizzato da Luigi Usai per capirne il funzionamento e le classi python
+# rifattorizzato da Luigi Usai
 
 from pygame import *
 import sys
@@ -53,7 +53,7 @@ class Ship(sprite.Sprite):
         game.screen.blit(self.image, self.rect)
 
 
-class Bullet(sprite.Sprite):
+class proiettile(sprite.Sprite):
     def __init__(self, xpos, ypos, direction, speed, filename, side):
         sprite.Sprite.__init__(self)
         self.image = IMAGES[filename]
@@ -253,9 +253,9 @@ class Mystery(sprite.Sprite):
             self.timer = currentTime
 
 
-class EnemyExplosion(sprite.Sprite):
+class esplosioneNemico(sprite.Sprite):
     def __init__(self, enemy, *groups):
-        super(EnemyExplosion, self).__init__(*groups)
+        super(esplosioneNemico, self).__init__(*groups)
         self.image = transform.scale(self.get_image(enemy.row), (40, 35))
         self.image2 = transform.scale(self.get_image(enemy.row), (50, 45))
         self.rect = self.image.get_rect(topleft=(enemy.rect.x, enemy.rect.y))
@@ -276,9 +276,9 @@ class EnemyExplosion(sprite.Sprite):
             self.kill()
 
 
-class MysteryExplosion(sprite.Sprite):
+class esplosioneMisteriosa(sprite.Sprite):
     def __init__(self, mystery, score, *groups):
-        super(MysteryExplosion, self).__init__(*groups)
+        super(esplosioneMisteriosa, self).__init__(*groups)
         self.text = Text(FONT, 20, str(score), WHITE,
                          mystery.rect.x + 20, mystery.rect.y + 6)
         self.timer = time.get_ticks()
@@ -363,10 +363,10 @@ class SpaceInvaders(object):
         self.player = Ship()
         self.playerGroup = sprite.Group(self.player)
         self.explosionsGroup = sprite.Group()
-        self.bullets = sprite.Group()
+        self.proiettili = sprite.Group()
         self.mysteryShip = Mystery()
         self.mysteryGroup = sprite.Group(self.mysteryShip)
-        self.enemyBullets = sprite.Group()
+        self.enemyproiettili = sprite.Group()
         self.make_enemies()
         self.allSprites = sprite.Group(self.player, self.enemies,
                                        self.livesGroup, self.mysteryShip)
@@ -428,24 +428,27 @@ class SpaceInvaders(object):
                 sys.exit()
             if e.type == KEYDOWN:
                 if e.key == K_SPACE:
-                    if len(self.bullets) == 0 and self.shipAlive:
+                    if len(self.proiettili) == 0 and self.shipAlive:
                         if self.score < 1000:
-                            bullet = Bullet(self.player.rect.x + 23,
+                            # Luigi Usai: dichiaro proiettile per non avere errore
+                            # UnboundLocalError: local variable 'proiettile' referenced before assignment
+                            proiettile = object
+                            proiettile = proiettile(self.player.rect.x + 23,
                                             self.player.rect.y + 5, -1,
                                             15, 'laser', 'center')
-                            self.bullets.add(bullet)
-                            self.allSprites.add(self.bullets)
+                            self.proiettili.add(proiettile)
+                            self.allSprites.add(self.proiettili)
                             self.sounds['shoot'].play()
                         else:
-                            leftbullet = Bullet(self.player.rect.x + 8,
+                            leftproiettile = proiettile(self.player.rect.x + 8,
                                                 self.player.rect.y + 5, -1,
                                                 15, 'laser', 'left')
-                            rightbullet = Bullet(self.player.rect.x + 38,
+                            rightproiettile = proiettile(self.player.rect.x + 38,
                                                  self.player.rect.y + 5, -1,
                                                  15, 'laser', 'right')
-                            self.bullets.add(leftbullet)
-                            self.bullets.add(rightbullet)
-                            self.allSprites.add(self.bullets)
+                            self.proiettili.add(leftproiettile)
+                            self.proiettili.add(rightproiettile)
+                            self.allSprites.add(self.proiettili)
                             self.sounds['shoot2'].play()
 
     def make_enemies(self):
@@ -462,10 +465,10 @@ class SpaceInvaders(object):
     def make_enemies_shoot(self):
         if (time.get_ticks() - self.timer) > 700 and self.enemies:
             enemy = self.enemies.random_bottom()
-            self.enemyBullets.add(
-                Bullet(enemy.rect.x + 14, enemy.rect.y + 20, 1, 5,
+            self.enemyproiettili.add(
+                proiettile(enemy.rect.x + 14, enemy.rect.y + 20, 1, 5,
                        'enemylaser', 'center'))
-            self.allSprites.add(self.enemyBullets)
+            self.allSprites.add(self.enemyproiettili)
             self.timer = time.get_ticks()
 
     def calculate_score(self, row):
@@ -496,26 +499,26 @@ class SpaceInvaders(object):
         self.screen.blit(self.enemy4, (299, 420))
 
     def check_collisions(self):
-        sprite.groupcollide(self.bullets, self.enemyBullets, True, True)
+        sprite.groupcollide(self.proiettili, self.enemyproiettili, True, True)
 
-        for enemy in sprite.groupcollide(self.enemies, self.bullets,
+        for enemy in sprite.groupcollide(self.enemies, self.proiettili,
                                          True, True).keys():
             self.sounds['invaderkilled'].play()
             self.calculate_score(enemy.row)
-            EnemyExplosion(enemy, self.explosionsGroup)
+            esplosioneNemico(enemy, self.explosionsGroup)
             self.gameTimer = time.get_ticks()
 
-        for mystery in sprite.groupcollide(self.mysteryGroup, self.bullets,
+        for mystery in sprite.groupcollide(self.mysteryGroup, self.proiettili,
                                            True, True).keys():
             mystery.mysteryEntered.stop()
             self.sounds['mysterykilled'].play()
             score = self.calculate_score(mystery.row)
-            MysteryExplosion(mystery, score, self.explosionsGroup)
+            esplosioneMisteriosa(mystery, score, self.explosionsGroup)
             newShip = Mystery()
             self.allSprites.add(newShip)
             self.mysteryGroup.add(newShip)
 
-        for player in sprite.groupcollide(self.playerGroup, self.enemyBullets,
+        for player in sprite.groupcollide(self.playerGroup, self.enemyproiettili,
                                           True, True).keys():
             if self.life3.alive():
                 self.life3.kill()
@@ -538,8 +541,8 @@ class SpaceInvaders(object):
                 self.gameOver = True
                 self.startGame = False
 
-        sprite.groupcollide(self.bullets, self.allBlockers, True, True)
-        sprite.groupcollide(self.enemyBullets, self.allBlockers, True, True)
+        sprite.groupcollide(self.proiettili, self.allBlockers, True, True)
+        sprite.groupcollide(self.enemyproiettili, self.allBlockers, True, True)
         if self.enemies.bottom >= BLOCKERS_POSITION:
             sprite.groupcollide(self.enemies, self.allBlockers, False, True)
 
