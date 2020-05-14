@@ -334,7 +334,7 @@ class SpaceInvaders(object):
         mixer.pre_init(44100, -16, 1, 4096)
         init()
         self.clock = time.Clock()
-        self.caption = display.set_caption('Space Invaders')
+        self.caption = display.set_caption('Invasori Spaziali')
         self.screen = SCREEN
         self.background = image.load(IMAGE_PATH + 'background.jpg').convert()
         self.startGame = False
@@ -342,17 +342,17 @@ class SpaceInvaders(object):
         self.gameOver = False
         # Counter for enemy starting position (increased each new round)
         self.enemyPosition = ENEMY_DEFAULT_POSITION
-        self.titleText = Text(FONT, 50, 'Space Invaders', WHITE, 164, 155)
-        self.titleText2 = Text(FONT, 25, 'Press any key to continue', WHITE,
+        self.titleText = Text(FONT, 50, 'Invasori Spaziali!', WHITE, 164, 155)
+        self.titleText2 = Text(FONT, 25, 'Premi un tasto per continuare', WHITE,
                                201, 225)
-        self.gameOverText = Text(FONT, 50, 'Game Over', WHITE, 250, 270)
-        self.nextRoundText = Text(FONT, 50, 'Next Round', WHITE, 240, 270)
+        self.gameOverText = Text(FONT, 50, 'Hai Perso!', WHITE, 250, 270)
+        self.nextRoundText = Text(FONT, 50, 'Livello Successivo', WHITE, 240, 270)
         self.enemy1Text = Text(FONT, 25, '   =   10 pts', GREEN, 368, 270)
         self.enemy2Text = Text(FONT, 25, '   =  20 pts', BLUE, 368, 320)
         self.enemy3Text = Text(FONT, 25, '   =  30 pts', PURPLE, 368, 370)
         self.enemy4Text = Text(FONT, 25, '   =  ?????', RED, 368, 420)
-        self.scoreText = Text(FONT, 20, 'Score', WHITE, 5, 5)
-        self.livesText = Text(FONT, 20, 'Lives ', WHITE, 640, 5)
+        self.scoreText = Text(FONT, 20, 'Punti ', WHITE, 5, 5)
+        self.livesText = Text(FONT, 20, 'Vite ', WHITE, 640, 5)
 
         self.life1 = Life(715, 3)
         self.life2 = Life(742, 3)
@@ -367,7 +367,7 @@ class SpaceInvaders(object):
         self.mysteryShip = Mystery()
         self.mysteryGroup = sprite.Group(self.mysteryShip)
         self.enemyBullets = sprite.Group()
-        self.make_enemies()
+        self.creaNemici()
         self.allSprites = sprite.Group(self.player, self.enemies,
                                        self.livesGroup, self.mysteryShip)
         self.keys = key.get_pressed()
@@ -376,7 +376,7 @@ class SpaceInvaders(object):
         self.noteTimer = time.get_ticks()
         self.shipTimer = time.get_ticks()
         self.score = score
-        self.create_audio()
+        self.creaAudio()
         self.makeNewShip = False
         self.shipAlive = True
 
@@ -390,7 +390,7 @@ class SpaceInvaders(object):
                 blockerGroup.add(blocker)
         return blockerGroup
 
-    def create_audio(self):
+    def creaAudio(self):
         self.sounds = {}
         for sound_name in ['shoot', 'shoot2', 'invaderkilled', 'mysterykilled',
                            'shipexplosion']:
@@ -405,7 +405,7 @@ class SpaceInvaders(object):
 
         self.noteIndex = 0
 
-    def play_main_music(self, currentTime):
+    def suonaMusicaPrincipale(self, currentTime):
         if currentTime - self.noteTimer > self.enemies.moveTime:
             self.note = self.musicNotes[self.noteIndex]
             if self.noteIndex < 3:
@@ -448,7 +448,7 @@ class SpaceInvaders(object):
                             self.allSprites.add(self.bullets)
                             self.sounds['shoot2'].play()
 
-    def make_enemies(self):
+    def creaNemici(self):
         enemies = EnemiesGroup(10, 5)
         for row in range(5):
             for column in range(10):
@@ -459,7 +459,7 @@ class SpaceInvaders(object):
 
         self.enemies = enemies
 
-    def make_enemies_shoot(self):
+    def creaNemici_shoot(self):
         if (time.get_ticks() - self.timer) > 700 and self.enemies:
             enemy = self.enemies.random_bottom()
             self.enemyBullets.add(
@@ -614,7 +614,7 @@ class SpaceInvaders(object):
                         self.gameTimer += 3000
                 else:
                     currentTime = time.get_ticks()
-                    self.play_main_music(currentTime)
+                    self.suonaMusicaPrincipale(currentTime)
                     self.screen.blit(self.background, (0, 0))
                     self.allBlockers.update(self.screen)
                     self.scoreText2 = Text(FONT, 20, str(self.score), GREEN,
@@ -628,7 +628,7 @@ class SpaceInvaders(object):
                     self.explosionsGroup.update(currentTime)
                     self.check_collisions()
                     self.create_new_ship(self.makeNewShip, currentTime)
-                    self.make_enemies_shoot()
+                    self.creaNemici_shoot()
 
             elif self.gameOver:
                 currentTime = time.get_ticks()
